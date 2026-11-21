@@ -1,0 +1,219 @@
+<div class="auth-page">
+
+  <section class="auth-visual">
+    <div class="visual-overlay">
+
+      <a routerLink="/login" class="visual-brand">
+        <span class="brand-symbol">🌱</span>
+        <span>GHARSA</span>
+      </a>
+
+      <div class="visual-copy">
+
+        <span class="eyebrow">
+          YOUR GREEN JOURNEY STARTS HERE
+        </span>
+
+        <h1>
+          A little care.<br>
+          A lot of growth.
+        </h1>
+
+        <p>
+          Start building your own plant collection,
+          track watering and enjoy every new leaf.
+        </p>
+
+        <span class="arabic-line">
+          ازرع اهتمامك، وشاهد نموّك.
+        </span>
+
+      </div>
+
+      <div class="visual-footer">
+        © GHARSA — Plant Care Management
+      </div>
+
+    </div>
+  </section>
+
+  <section class="auth-form-side">
+
+    <div class="auth-card">
+
+      <div class="mobile-brand">
+        🌱 GHARSA
+      </div>
+
+      <div class="form-heading">
+
+        <span class="welcome-label">
+          JOIN GHARSA
+        </span>
+
+        <h2>Create your account</h2>
+
+        <p>
+          Let's make your plant care journey
+          simple and beautiful.
+        </p>
+
+      </div>
+
+      @if (errorMessage()) {
+        <div class="error-message" role="alert">
+          {{ errorMessage() }}
+        </div>
+      }
+
+      <form
+        [formGroup]="form"
+        (ngSubmit)="register()">
+
+        <!-- FULL NAME -->
+        <div class="form-field">
+
+          <label for="fullName">
+            Full Name
+          </label>
+
+          <input
+            id="fullName"
+            type="text"
+            formControlName="fullName"
+            placeholder="Your full name"
+            autocomplete="name"
+            maxlength="100"
+          />
+
+          @if (fullName.touched && fullName.invalid) {
+            <small class="field-error">
+              Name is required (maximum 100 characters).
+            </small>
+          }
+
+        </div>
+
+        <!-- EMAIL -->
+        <div class="form-field">
+
+          <label for="email">
+            Email Address
+          </label>
+
+          <input
+            id="email"
+            type="email"
+            formControlName="email"
+            placeholder="you@example.com"
+            autocomplete="email"
+            maxlength="150"
+          />
+
+          @if (email.touched && email.invalid) {
+            <small class="field-error">
+              Enter a valid email address (maximum 150 characters).
+            </small>
+          }
+
+        </div>
+
+        <!-- PASSWORD -->
+        <div class="form-field">
+
+          <label for="password">
+            Password
+          </label>
+
+          <div class="password-wrapper">
+
+            <input
+              id="password"
+              [type]="showPassword() ? 'text' : 'password'"
+              formControlName="password"
+              placeholder="At least 8 characters"
+              autocomplete="new-password"
+            />
+
+            <button
+              type="button"
+              class="password-toggle"
+              (click)="togglePassword()">
+
+              {{ showPassword() ? 'Hide' : 'Show' }}
+
+            </button>
+
+          </div>
+
+          @if (password.touched && password.invalid) {
+            <small class="field-error">
+              Password must be at least 8 characters.
+            </small>
+          }
+
+        </div>
+
+        <!-- CONFIRM PASSWORD -->
+        <div class="form-field">
+
+          <label for="confirmPassword">
+            Confirm Password
+          </label>
+
+          <input
+            id="confirmPassword"
+            [type]="showPassword() ? 'text' : 'password'"
+            formControlName="confirmPassword"
+            placeholder="Repeat your password"
+            autocomplete="new-password"
+          />
+
+          @if (
+            confirmPassword.touched &&
+            confirmPassword.invalid
+          ) {
+            <small class="field-error">
+              Please confirm your password.
+            </small>
+          }
+
+          @if (
+            form.touched &&
+            form.hasError('passwordMismatch')
+          ) {
+            <small class="field-error">
+              Passwords do not match.
+            </small>
+          }
+
+        </div>
+
+        <!-- SUBMIT BUTTON -->
+        <button
+          type="submit"
+          class="submit-btn"
+          [disabled]="loading()">
+
+          {{ loading() ? 'Creating Account...' : 'Create Account' }}
+
+        </button>
+
+      </form>
+
+      <!-- LOGIN LINK -->
+      <div class="auth-switch">
+
+        Already have an account?
+
+        <a routerLink="/login">
+          Sign In
+        </a>
+
+      </div>
+
+    </div>
+
+  </section>
+
+</div>

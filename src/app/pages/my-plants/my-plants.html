@@ -1,0 +1,313 @@
+
+<div class="my-plants-page">
+
+  <!-- Page Header -->
+  <section class="page-hero">
+
+    <div class="hero-content">
+
+      <span class="eyebrow">
+        MY PERSONAL GARDEN
+      </span>
+
+      <h1>
+        My Plant <span>Collection.</span>
+      </h1>
+
+      <p>
+        Every plant has its own story.
+        Keep track of your green friends
+        and give them the care they deserve.
+      </p>
+
+      <a routerLink="/plants"
+         class="hero-button">
+        + Add More Plants
+      </a>
+
+    </div>
+
+    <div class="hero-plant"
+         aria-hidden="true">
+       🌳 
+
+    </div>
+
+  </section>
+
+  <!-- Statistics -->
+  <section class="overview-section">
+
+    <div class="stat-card">
+
+      <div class="stat-icon">🌿</div>
+
+      <div>
+        <span>Total Plants</span>
+        <strong>
+          {{ loading() ? '...' : totalPlants() }}
+        </strong>
+        <small>Plants in your garden</small>
+      </div>
+
+    </div>
+
+    <div class="stat-card">
+
+      <div class="stat-icon">💧</div>
+
+      <div>
+        <span>Watered Before</span>
+        <strong>
+          {{ loading() ? '...' : wateredPlants() }}
+        </strong>
+        <small>Plants with watering history</small>
+      </div>
+
+    </div>
+
+    <div class="stat-card">
+
+      <div class="stat-icon">🌱</div>
+
+      <div>
+        <span>Green Journey</span>
+        <strong>
+          {{ totalPlants() > 0 ? 'Growing' : 'Ready' }}
+        </strong>
+        <small>One plant at a time</small>
+      </div>
+
+    </div>
+
+  </section>
+
+  <!-- Collection -->
+  <section class="collection-section">
+
+    <div class="section-heading">
+
+      <div>
+        <span class="section-label">
+          YOUR GREEN FRIENDS
+        </span>
+
+        <h2>Plants in My Garden</h2>
+
+        <p>
+          Manage watering and explore
+          each plant's care guide.
+        </p>
+      </div>
+
+      <a routerLink="/plants"
+         class="explore-link">
+        Explore Plants →
+      </a>
+
+    </div>
+
+    @if (successMessage()) {
+      <div class="message success" role="status">
+        ✓ {{ successMessage() }}
+      </div>
+    }
+
+    @if (errorMessage()) {
+      <div class="message error" role="alert">
+        {{ errorMessage() }}
+      </div>
+    }
+
+    @if (loading()) {
+
+      <div class="empty-state">
+        <span>🌿</span>
+        <h3>Loading your plants...</h3>
+        <p>Getting your collection ready.</p>
+      </div>
+
+    } @else if (
+      errorMessage() && myPlants().length === 0
+    ) {
+
+      <div class="empty-state">
+        <span>🍃</span>
+        <h3>Unable to load collection</h3>
+        <p>Please check the API connection.</p>
+
+        <button
+          type="button"
+          class="primary-button"
+          (click)="loadPlants()">
+          Try Again
+        </button>
+      </div>
+
+    } @else if (myPlants().length === 0) {
+
+      <div class="empty-state">
+
+        <span>🪴</span>
+
+        <h3>Your garden is waiting!</h3>
+
+        <p>
+          You haven't added any plants yet.
+          Explore our plant library and
+          bring your first green friend home.
+        </p>
+
+        <a
+          routerLink="/plants"
+          class="primary-button">
+          Explore Plant Library
+        </a>
+
+      </div>
+
+    } @else {
+
+      <div class="plants-grid">
+
+        @for (
+          plant of myPlants();
+          track plant.myPlantId
+        ) {
+
+          <article class="plant-card">
+
+            <div class="plant-photo">
+
+              @if (plant.imageUrl) {
+                <img
+                  [src]="plant.imageUrl"
+                  [alt]="getPlantName(plant)"
+                  loading="lazy"
+                  (error)="imageFailed($event)"
+                />
+              }
+
+              <span class="photo-fallback">
+                🪴
+              </span>
+
+              <span class="plant-label">
+                MY PLANT
+              </span>
+
+            </div>
+
+            <div class="plant-body">
+
+              <h3>
+                {{ getPlantName(plant) }}
+              </h3>
+
+              @if (
+                plant.plantName &&
+                plant.nickname &&
+                plant.nickname !== plant.plantName
+              ) {
+                <p class="original-name">
+                  {{ plant.plantName }}
+                </p>
+              }
+
+              <div class="plant-meta">
+
+                <div>
+                  <span>📅</span>
+
+                  <p>
+                    Added
+                    <strong>
+                      {{ plant.dateAdded
+                        ? (plant.dateAdded | date:'mediumDate')
+                        : 'Not available' }}
+                    </strong>
+                  </p>
+                </div>
+
+                <div>
+                  <span>💧</span>
+
+                  <p>
+                    Last Watered
+                    <strong>
+                      {{ plant.lastWateredAt
+                        ? (plant.lastWateredAt | date:'mediumDate')
+                        : 'Not recorded' }}
+                    </strong>
+                  </p>
+                </div>
+
+              </div>
+
+              <div class="plant-actions">
+
+                <button
+                  type="button"
+                  class="water-button"
+                  [disabled]="busyPlantId() !== null"
+                  (click)="recordWatering(plant)">
+
+                  {{ busyPlantId() === plant.myPlantId
+                    ? 'Saving...'
+                    : '💧 Watered Today' }}
+
+                </button>
+
+                <a
+                  [routerLink]="['/plants', plant.plantId]"
+                  class="details-button">
+                  View Care Guide →
+                </a>
+
+              </div>
+
+              <button
+                type="button"
+                class="remove-button"
+                [disabled]="busyPlantId() !== null"
+                (click)="removePlant(plant)">
+                Remove from My Plants
+              </button>
+
+            </div>
+
+          </article>
+
+        }
+
+      </div>
+
+    }
+
+  </section>
+
+  <!-- Care Schedule -->
+  <section class="schedule-banner">
+
+    <div class="schedule-icon">📅</div>
+
+    <div>
+      <span>STAY ON TRACK</span>
+
+      <h2>
+        Keep your plant care organized.
+      </h2>
+
+      <p>
+        Visit your care schedule to follow
+        your plants' watering routines.
+      </p>
+    </div>
+
+    <a routerLink="/care-schedule">
+      View Care Schedule →
+    </a>
+
+  </section>
+
+</div>

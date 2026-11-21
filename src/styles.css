@@ -1,0 +1,49 @@
+/* You can add global styles to this file, and also import other style files */
+
+:root {
+  --dark-green: #344C32;
+  --olive: #71815A;
+  --beige: #E9DFC9;
+  --cream: #FAF8F1;
+  --white: #FFFFFF;
+
+  --text-color: #344C32;
+  --muted-text: #71815A;
+  --border-color: #E9DFC9;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+}
+
+body {
+  font-family:
+    "Segoe UI",
+    Tahoma,
+    Arial,
+    sans-serif;
+
+  background: var(--cream);
+  color: var(--text-color);
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+a {
+  transition: 0.2s;
+}

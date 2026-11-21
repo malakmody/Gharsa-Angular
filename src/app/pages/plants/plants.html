@@ -1,0 +1,288 @@
+
+<div class="plants-page">
+
+  <!-- Page Header -->
+  <section class="page-hero">
+
+    <div class="hero-content">
+
+      <span class="eyebrow">
+        GHARSA PLANT LIBRARY
+      </span>
+
+      <h1>
+        Discover Your Next
+        <span>Green Friend.</span>
+      </h1>
+
+      <p>
+        Explore our plant collection,
+        discover their unique needs,
+        and find the perfect plant
+        for your home.
+      </p>
+
+      <div class="hero-actions">
+        <a routerLink="/my-plants"
+           class="my-plants-btn">
+          🪴 My Plant Collection
+        </a>
+      </div>
+
+    </div>
+
+    <div class="hero-decoration"
+         aria-hidden="true">
+      🌿
+    </div>
+
+  </section>
+
+  <!-- Library Heading -->
+  <section class="library-section">
+
+    <div class="section-heading">
+
+      <div>
+        <span class="section-label">
+          EXPLORE NATURE
+        </span>
+
+        <h2>Plant Library</h2>
+
+        <p>
+          Find a plant that fits your space
+          and your lifestyle.
+        </p>
+      </div>
+
+      <div class="result-count">
+        @if (!loading()) {
+          {{ filteredPlants().length }}
+          {{ filteredPlants().length === 1
+              ? 'plant'
+              : 'plants' }}
+        }
+      </div>
+
+    </div>
+
+    <!-- Search -->
+    <div class="search-panel">
+
+      <div class="search-box">
+
+        <span class="search-icon">⌕</span>
+
+        <input
+          #searchInput
+          type="search"
+          placeholder="Search plants by name..."
+          aria-label="Search plants"
+          [value]="searchText()"
+          (input)="updateSearch($event)"
+        />
+
+      </div>
+
+      <button
+        type="button"
+        class="reset-btn"
+        (click)="clearFilters(); searchInput.value = ''">
+        Clear Filters
+      </button>
+
+    </div>
+
+    <!-- Category Filters -->
+    <div class="category-filters">
+
+      <button
+        type="button"
+        class="filter-btn"
+        [class.selected]="selectedCategory() === 0"
+        (click)="chooseCategory(0)">
+        All Plants
+      </button>
+
+      @for (
+        category of categories();
+        track category.categoryId
+      ) {
+        <button
+          type="button"
+          class="filter-btn"
+          [class.selected]="selectedCategory() === category.categoryId"
+          (click)="chooseCategory(category.categoryId)">
+          {{ category.name }}
+        </button>
+      }
+
+    </div>
+
+    @if (categoryError()) {
+      <p class="filter-notice">
+        {{ categoryError() }}
+      </p>
+    }
+
+    <!-- Loading State -->
+    @if (loading()) {
+
+      <div class="feedback-panel">
+        <span class="feedback-icon">🌱</span>
+        <h3>Loading plants...</h3>
+        <p>Discovering our green collection.</p>
+      </div>
+
+    } @else if (errorMessage()) {
+
+      <!-- API Error -->
+      <div class="feedback-panel">
+
+        <span class="feedback-icon">🍃</span>
+
+        <h3>We couldn't load the plants</h3>
+
+        <p>{{ errorMessage() }}</p>
+
+        <button
+          type="button"
+          class="primary-btn"
+          (click)="loadPlants()">
+          Try Again
+        </button>
+
+      </div>
+
+    } @else if (plants().length === 0) {
+
+      <!-- Empty Database -->
+      <div class="feedback-panel">
+
+        <span class="feedback-icon">🪴</span>
+
+        <h3>No plants in the library yet</h3>
+
+        <p>
+          The plant library is ready.
+          Plants will appear here once
+          they are added to the database.
+        </p>
+
+      </div>
+
+    } @else if (filteredPlants().length === 0) {
+
+      <!-- No Search Results -->
+      <div class="feedback-panel">
+
+        <span class="feedback-icon">🔎</span>
+
+        <h3>No matching plants found</h3>
+
+        <p>
+          Try another plant name
+          or choose a different category.
+        </p>
+
+        <button
+          type="button"
+          class="primary-btn"
+          (click)="clearFilters(); searchInput.value = ''">
+          Show All Plants
+        </button>
+
+      </div>
+
+    } @else {
+
+      <!-- Plant Cards -->
+      <div class="plants-grid">
+
+        @for (
+          plant of filteredPlants();
+          track plant.plantId
+        ) {
+
+          <article class="plant-card">
+
+            <div class="plant-image">
+
+              @if (plant.imageUrl) {
+
+                <img
+                  [src]="plant.imageUrl"
+                  [alt]="plant.name"
+                  loading="lazy"
+                  (error)="imageFailed($event)"
+                />
+
+              }
+
+              <span class="plant-fallback">
+                🪴
+              </span>
+
+              <span class="category-badge">
+                {{ getCategoryName(plant) }}
+              </span>
+
+            </div>
+
+            <div class="plant-info">
+
+              <h3>{{ plant.name }}</h3>
+
+              @if (plant.scientificName) {
+                <span class="scientific-name">
+                  {{ plant.scientificName }}
+                </span>
+              }
+
+              <p class="plant-description">
+                {{ plant.description || 'Discover how to care for this beautiful plant.' }}
+              </p>
+
+              <a
+                [routerLink]="['/plants', plant.plantId]"
+                class="details-btn">
+                View Plant Details
+                <span>→</span>
+              </a>
+
+            </div>
+
+          </article>
+
+        }
+
+      </div>
+
+    }
+
+  </section>
+
+  <!-- Bottom Banner -->
+  <section class="bottom-banner">
+
+    <div>
+      <span>GROW WITH GHARSA</span>
+
+      <h2>
+        Already have plants at home?
+      </h2>
+
+      <p>
+        Keep track of your collection
+        and never miss a moment of care.
+      </p>
+    </div>
+
+    <a routerLink="/my-plants">
+      Go to My Plants →
+    </a>
+
+  </section>
+
+</div>

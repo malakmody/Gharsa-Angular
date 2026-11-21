@@ -1,0 +1,246 @@
+
+<div class="details-page">
+
+  <a routerLink="/plants" class="back-link">
+    ← Back to Plant Library
+  </a>
+
+  @if (loading()) {
+
+    <div class="feedback-box">
+      <span>🌱</span>
+      <h2>Loading plant details...</h2>
+      <p>Getting your green friend's information.</p>
+    </div>
+
+  } @else if (errorMessage()) {
+
+    <div class="feedback-box">
+      <span>🍃</span>
+      <h2>Something went wrong</h2>
+      <p>{{ errorMessage() }}</p>
+
+      <a routerLink="/plants" class="primary-btn">
+        Explore Plants
+      </a>
+    </div>
+
+  } @else if (plant(); as selectedPlant) {
+
+    <!-- Main Plant Information -->
+    <section class="plant-hero">
+
+      <div class="plant-photo">
+
+        @if (selectedPlant.imageUrl && !imageError()) {
+          <img
+            [src]="selectedPlant.imageUrl"
+            [alt]="selectedPlant.name"
+            (error)="onImageError()"
+          />
+        } @else {
+          <span class="plant-emoji">🪴</span>
+        }
+
+      </div>
+
+      <div class="plant-summary">
+
+        <span class="eyebrow">
+          GHARSA PLANT LIBRARY
+        </span>
+
+        @if (selectedPlant.categoryName) {
+          <span class="category-label">
+            {{ selectedPlant.categoryName }}
+          </span>
+        }
+
+        <h1>{{ selectedPlant.name }}</h1>
+
+        @if (selectedPlant.scientificName) {
+          <p class="scientific-name">
+            {{ selectedPlant.scientificName }}
+          </p>
+        }
+
+        <div class="separator"></div>
+
+        <h3>About This Plant</h3>
+
+        <p class="plant-description">
+          {{ selectedPlant.description ||
+             'A beautiful plant waiting to become part of your green collection.' }}
+        </p>
+
+        <div class="summary-actions">
+
+          <button
+            type="button"
+            class="primary-btn"
+            [disabled]="adding() || addSuccess()"
+            (click)="addToMyPlants()">
+
+            @if (adding()) {
+              Adding Plant...
+            } @else if (addSuccess()) {
+              ✓ Added to My Plants
+            } @else {
+              + Add to My Plants
+            }
+
+          </button>
+
+          <a
+            routerLink="/my-plants"
+            class="secondary-btn">
+            My Collection →
+          </a>
+
+        </div>
+
+        @if (addMessage()) {
+          <p
+            class="action-message"
+            [class.success]="addSuccess()"
+            role="status">
+            {{ addMessage() }}
+          </p>
+        }
+
+      </div>
+
+    </section>
+
+    <!-- Plant Care -->
+    <section class="care-section">
+
+      <div class="section-heading">
+        <span class="eyebrow">PLANT CARE GUIDE</span>
+        <h2>How to Care for {{ selectedPlant.name }}</h2>
+        <p>
+          Everything you need to know to help
+          your plant grow and thrive.
+        </p>
+      </div>
+
+      @if (careGuide(); as guide) {
+
+        <div class="care-grid">
+
+          <article class="care-card">
+
+            <div class="care-icon sunlight">☀️</div>
+
+            <h3>Sunlight</h3>
+
+            <p>
+              {{ guide.sunlightRequirement ||
+                 'Not specified' }}
+            </p>
+
+          </article>
+
+          <article class="care-card">
+
+            <div class="care-icon water">💧</div>
+
+            <h3>Watering</h3>
+
+            <p>
+              {{ guide.waterRequirement ||
+                 'Not specified' }}
+            </p>
+
+          </article>
+
+          <article class="care-card">
+
+            <div class="care-icon soil">🌱</div>
+
+            <h3>Soil Type</h3>
+
+            <p>
+              {{ guide.soilType ||
+                 'Not specified' }}
+            </p>
+
+          </article>
+
+          <article class="care-card">
+
+            <div class="care-icon schedule">📅</div>
+
+            <h3>Watering Interval</h3>
+
+            <p>
+              @if (guide.wateringIntervalDays != null) {
+                Every {{ guide.wateringIntervalDays }} days
+              } @else {
+                Not specified
+              }
+            </p>
+
+          </article>
+
+        </div>
+
+        @if (guide.additionalTips) {
+
+          <div class="tips-card">
+
+            <div class="tips-icon">💡</div>
+
+            <div>
+              <span class="eyebrow">
+                EXTRA CARE TIPS
+              </span>
+
+              <h3>A little extra love</h3>
+
+              <p>{{ guide.additionalTips }}</p>
+            </div>
+
+          </div>
+
+        }
+
+      } @else {
+
+        <div class="no-guide">
+          <span>🌿</span>
+          <h3>Care guide not available yet</h3>
+
+          <p>
+            Detailed care instructions will appear
+            here when they are available.
+          </p>
+        </div>
+
+      }
+
+    </section>
+
+    <!-- Bottom Call to Action -->
+    <section class="bottom-banner">
+
+      <div>
+        <span class="eyebrow">GROW WITH GHARSA</span>
+
+        <h2>Your plant journey continues.</h2>
+
+        <p>
+          Explore more plants and grow
+          your personal green collection.
+        </p>
+      </div>
+
+      <a routerLink="/plants">
+        Explore More Plants →
+      </a>
+
+    </section>
+
+  }
+
+</div>

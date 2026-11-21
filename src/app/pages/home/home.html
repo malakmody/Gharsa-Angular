@@ -1,0 +1,323 @@
+
+<div class="dashboard">
+
+  <!-- Welcome Section -->
+  <section class="welcome-section">
+
+    <div class="welcome-content">
+
+      <span class="eyebrow">
+        YOUR GREEN SPACE
+      </span>
+
+      <h1>
+        Hello, {{ userName() }}!
+        <span class="wave">👋</span>
+      </h1>
+
+      <p>
+        Every little act of care helps
+        something beautiful grow.
+        Let's see how your plants are doing.
+      </p>
+
+      <div class="welcome-actions">
+
+        <a
+          routerLink="/plants"
+          class="btn btn-light">
+          <span>＋</span>
+          Add a Plant
+        </a>
+
+        <a
+          routerLink="/my-plants"
+          class="btn btn-outline">
+          View My Plants
+        </a>
+
+      </div>
+
+    </div>
+
+    <div class="welcome-art"
+         aria-hidden="true">
+
+      <div class="art-circle">
+        <span class="plant-art">🪴</span>
+      </div>
+
+      <span class="art-star star-one">✦</span>
+      <span class="art-star star-two">✧</span>
+
+    </div>
+
+  </section>
+
+  <!-- Statistics -->
+  <section class="stats-section">
+
+    <div class="section-heading">
+      <div>
+        <span class="section-label">
+          AT A GLANCE
+        </span>
+
+        <h2>Your Plant Overview</h2>
+      </div>
+    </div>
+
+    <div class="stats-grid">
+
+      <div class="stat-card">
+        <div class="stat-icon green">
+          🌿
+        </div>
+
+        <div class="stat-content">
+          <span>Total Plants</span>
+
+          <strong>
+            {{ loading() ? '...' : totalPlants() }}
+          </strong>
+
+          <small>Your personal collection</small>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon beige">
+          💧
+        </div>
+
+        <div class="stat-content">
+          <span>Plants Watered Before</span>
+
+          <strong>
+            {{ loading() ? '...' : wateredPlants() }}
+          </strong>
+
+          <small>With a recorded watering date</small>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon olive">
+          🌱
+        </div>
+
+        <div class="stat-content">
+          <span>Your Green Journey</span>
+
+          <strong>
+            {{ totalPlants() > 0 ? 'Growing' : 'Ready' }}
+          </strong>
+
+          <small>
+            {{ totalPlants() > 0
+              ? 'Keep caring for your plants'
+              : 'Start your first collection' }}
+          </small>
+        </div>
+      </div>
+
+    </div>
+
+  </section>
+
+  <!-- Main Content -->
+  <div class="dashboard-grid">
+
+    <!-- Plant Collection -->
+    <section class="collection-section">
+
+      <div class="section-heading">
+
+        <div>
+          <span class="section-label">
+            MY LITTLE GARDEN
+          </span>
+
+          <h2>My Plant Collection</h2>
+
+          <p>
+            The green friends you're taking care of.
+          </p>
+        </div>
+
+        <a routerLink="/my-plants"
+           class="view-all">
+          View All →
+        </a>
+
+      </div>
+
+      @if (loading()) {
+
+        <div class="empty-state">
+          <span class="empty-icon">🌿</span>
+          <h3>Loading your plants...</h3>
+          <p>Getting your garden ready.</p>
+        </div>
+
+      } @else if (errorMessage()) {
+
+        <div class="empty-state">
+
+          <span class="empty-icon">🍃</span>
+
+          <h3>Unable to load plants</h3>
+
+          <p>{{ errorMessage() }}</p>
+
+          <button
+            type="button"
+            class="btn btn-dark"
+            (click)="loadMyPlants()">
+            Try Again
+          </button>
+
+        </div>
+
+      } @else if (recentPlants().length === 0) {
+
+        <div class="empty-state">
+
+          <span class="empty-icon">🪴</span>
+
+          <h3>Your garden starts here!</h3>
+
+          <p>
+            You haven't added any plants yet.
+            Explore the plant library and
+            choose your first green friend.
+          </p>
+
+          <a
+            routerLink="/plants"
+            class="btn btn-dark">
+            Explore Plants
+          </a>
+
+        </div>
+
+      } @else {
+
+        <div class="plant-grid">
+
+          @for (
+            plant of recentPlants();
+            track plant.myPlantId
+          ) {
+
+            <article class="plant-card">
+
+              <div class="plant-image">
+
+                @if (plant.imageUrl) {
+                  <img
+                    [src]="plant.imageUrl"
+                    [alt]="getDisplayName(plant)"
+                  />
+                } @else {
+                  <span>🪴</span>
+                }
+
+              </div>
+
+              <div class="plant-details">
+
+                <span class="plant-tag">
+                  MY PLANT
+                </span>
+
+                <h3>
+                  {{ getDisplayName(plant) }}
+                </h3>
+
+                <p>
+                  @if (plant.lastWateredAt) {
+                    Last watered:
+                    {{ plant.lastWateredAt | date:'mediumDate' }}
+                  } @else {
+                    No watering recorded yet
+                  }
+                </p>
+
+                <a routerLink="/my-plants">
+                  View Collection →
+                </a>
+
+              </div>
+
+            </article>
+
+          }
+
+        </div>
+
+      }
+
+    </section>
+
+    <!-- Side Panel -->
+    <aside class="side-panel">
+
+      <div class="care-card">
+
+        <div class="care-icon">
+          💧
+        </div>
+
+        <span class="section-label">
+          DAILY REMINDER
+        </span>
+
+        <h3>A little care goes a long way.</h3>
+
+        <p>
+          Check your care schedule to see
+          what your plants need today.
+        </p>
+
+        <a
+          routerLink="/care-schedule"
+          class="btn btn-dark">
+          Care Schedule →
+        </a>
+
+      </div>
+
+      <div class="tip-card">
+
+        <span class="tip-icon">☀️</span>
+
+        <div>
+          <h3>Plant Care Tip</h3>
+
+          <p>
+            Check the soil before watering.
+            Different plants have different
+            moisture needs.
+          </p>
+        </div>
+
+      </div>
+
+      <div class="explore-card">
+
+        <span>DISCOVER MORE</span>
+
+        <h3>Find your next green friend.</h3>
+
+        <a routerLink="/plants">
+          Explore Plant Library →
+        </a>
+
+      </div>
+
+    </aside>
+
+  </div>
+
+</div>

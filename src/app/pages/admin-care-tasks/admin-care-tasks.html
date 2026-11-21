@@ -1,0 +1,498 @@
+
+<div class="tasks-admin-page">
+
+  <a routerLink="/admin" class="back-link">
+    ← Back to Admin Dashboard
+  </a>
+
+  <section class="page-hero">
+    <div>
+      <span class="eyebrow">GHARSA ADMINISTRATION</span>
+      <h1>Care Tasks Management 🌿</h1>
+      <p>
+        Create care tasks, manage their details,
+        and assign them to plants.
+      </p>
+    </div>
+
+    <span class="hero-icon">📋</span>
+  </section>
+
+  <section class="stats-grid">
+    <div class="stat-card">
+      <span>📋</span>
+      <div>
+        <p>Care Tasks</p>
+        <strong>{{ totalTasks() }}</strong>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <span>🌱</span>
+      <div>
+        <p>Plant Task Assignments</p>
+        <strong>{{ totalAssignments() }}</strong>
+      </div>
+    </div>
+  </section>
+
+  <nav class="tabs" aria-label="Care task management">
+
+    <button
+      type="button"
+      [class.active]="activeSection() === 'tasks'"
+      (click)="showSection('tasks')">
+      Manage Care Tasks
+    </button>
+
+    <button
+      type="button"
+      [class.active]="activeSection() === 'assignments'"
+      (click)="showSection('assignments')">
+      Assign Tasks to Plants
+    </button>
+
+  </nav>
+
+  @if (successMessage()) {
+    <div class="message success" role="status">
+      ✓ {{ successMessage() }}
+    </div>
+  }
+
+  @if (errorMessage()) {
+    <div class="message error" role="alert">
+      {{ errorMessage() }}
+    </div>
+  }
+
+  <!-- Care Task Management -->
+
+  @if (activeSection() === 'tasks') {
+
+    <section class="management-panel">
+
+      <div class="section-heading">
+        <div>
+          <span class="eyebrow dark">CARE TASK LIBRARY</span>
+          <h2>Manage Care Tasks</h2>
+          <p>Create and manage plant care activities.</p>
+        </div>
+
+        <button
+          class="primary-button"
+          type="button"
+          (click)="openAddTask()">
+          + Add Care Task
+        </button>
+      </div>
+
+      @if (taskFormVisible()) {
+        <div class="form-panel">
+
+          <div class="form-heading">
+            <h3>
+              {{ editingTaskId() === null
+                ? 'Add Care Task'
+                : 'Edit Care Task' }}
+            </h3>
+
+            <button
+              type="button"
+              class="close-button"
+              (click)="closeTaskForm()">
+              ✕
+            </button>
+          </div>
+
+          <form
+            [formGroup]="taskForm"
+            (ngSubmit)="saveTask()">
+
+            <div class="form-field">
+              <label for="taskName">Task Name *</label>
+
+              <input
+                id="taskName"
+                type="text"
+                formControlName="name"
+                maxlength="100"
+                placeholder="e.g. Watering"
+              />
+
+              @if (taskForm.controls.name.touched &&
+                   taskForm.controls.name.invalid) {
+                <small class="field-error">
+                  Enter a task name (maximum 100 characters).
+                </small>
+              }
+            </div>
+
+            <div class="form-field">
+              <label for="taskDescription">
+                Description
+              </label>
+
+              <textarea
+                id="taskDescription"
+                formControlName="description"
+                maxlength="300"
+                rows="3"
+                placeholder="Describe this care task...">
+              </textarea>
+            </div>
+
+            <div class="form-actions">
+              <button
+                type="submit"
+                class="primary-button"
+                [disabled]="saving()">
+
+                {{ saving()
+                  ? 'Saving...'
+                  : editingTaskId() === null
+                    ? 'Add Task'
+                    : 'Save Changes' }}
+              </button>
+
+              <button
+                type="button"
+                class="secondary-button"
+                [disabled]="saving()"
+                (click)="closeTaskForm()">
+                Cancel
+              </button>
+            </div>
+
+          </form>
+
+        </div>
+      }
+
+      <div class="toolbar">
+        <input
+          type="search"
+          placeholder="Search care tasks..."
+          aria-label="Search care tasks"
+          [value]="searchText()"
+          (input)="updateSearch($event)"
+        />
+
+        <button
+          type="button"
+          class="secondary-button"
+          [disabled]="loading()"
+          (click)="loadData()">
+          ↻ Refresh
+        </button>
+      </div>
+
+      @if (loading()) {
+
+        <div class="empty-panel">
+          <span>🌱</span>
+          <h3>Loading care tasks...</h3>
+        </div>
+
+      } @else if (filteredTasks().length === 0) {
+
+        <div class="empty-panel">
+          <span>📋</span>
+          <h3>No care tasks found</h3>
+          <p>Create your first care task.</p>
+        </div>
+
+      } @else {
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Task Name</th>
+                <th>Description</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              @for (task of filteredTasks();
+                    track task.careTaskId) {
+
+                <tr>
+                  <td>
+                    <strong>{{ task.name }}</strong>
+                  </td>
+
+                  <td>
+                    {{ task.description || '—' }}
+                  </td>
+
+                  <td>
+                    <div class="row-actions">
+
+                      <button
+                        type="button"
+                        class="edit-button"
+                        (click)="openEditTask(task)">
+                        Edit
+                      </button>
+
+                      <button
+                        type="button"
+                        class="delete-button"
+                        [disabled]="deleting()"
+                        (click)="deleteTask(task)">
+                        Delete
+                      </button>
+
+                    </div>
+                  </td>
+                </tr>
+
+              }
+            </tbody>
+          </table>
+        </div>
+
+      }
+
+    </section>
+  }
+
+  <!-- Plant Task Assignments -->
+
+  @if (activeSection() === 'assignments') {
+
+    <section class="management-panel">
+
+      <div class="section-heading">
+        <div>
+          <span class="eyebrow dark">PLANT ROUTINES</span>
+          <h2>Assign Tasks to Plants</h2>
+          <p>
+            Connect each plant to its care tasks
+            and define the interval in days.
+          </p>
+        </div>
+
+        <button
+          type="button"
+          class="primary-button"
+          (click)="openAddAssignment()">
+          + Assign Task
+        </button>
+      </div>
+
+      @if (assignmentFormVisible()) {
+
+        <div class="form-panel">
+
+          <div class="form-heading">
+            <h3>
+              {{ editingAssignment() === null
+                ? 'Assign Care Task'
+                : 'Edit Assignment' }}
+            </h3>
+
+            <button
+              type="button"
+              class="close-button"
+              (click)="closeAssignmentForm()">
+              ✕
+            </button>
+          </div>
+
+          <form
+            [formGroup]="assignmentForm"
+            (ngSubmit)="saveAssignment()">
+
+            <div class="form-grid">
+
+              <div class="form-field">
+                <label for="plantId">Plant *</label>
+
+                <select
+                  id="plantId"
+                  formControlName="plantId">
+
+                  <option [ngValue]="0">
+                    Select Plant
+                  </option>
+
+                  @for (plant of plants();
+                        track plant.plantId) {
+                    <option [ngValue]="plant.plantId">
+                      {{ plant.name }}
+                    </option>
+                  }
+
+                </select>
+              </div>
+
+              <div class="form-field">
+                <label for="careTaskId">Care Task *</label>
+
+                <select
+                  id="careTaskId"
+                  formControlName="careTaskId">
+
+                  <option [ngValue]="0">
+                    Select Care Task
+                  </option>
+
+                  @for (task of tasks();
+                        track task.careTaskId) {
+                    <option [ngValue]="task.careTaskId">
+                      {{ task.name }}
+                    </option>
+                  }
+
+                </select>
+              </div>
+
+              <div class="form-field">
+                <label for="intervalDays">
+                  Interval (Days) *
+                </label>
+
+                <input
+                  id="intervalDays"
+                  type="number"
+                  min="1"
+                  max="365"
+                  step="1"
+                  formControlName="intervalDays"
+                />
+              </div>
+
+            </div>
+
+            @if (assignmentForm.touched &&
+                 assignmentForm.invalid) {
+              <p class="field-error">
+                Select a plant and a task,
+                and enter an interval between 1 and 365 days.
+              </p>
+            }
+
+            <div class="form-actions">
+
+              <button
+                type="submit"
+                class="primary-button"
+                [disabled]="saving()">
+
+                {{ saving()
+                  ? 'Saving...'
+                  : editingAssignment() === null
+                    ? 'Assign Task'
+                    : 'Save Changes' }}
+              </button>
+
+              <button
+                type="button"
+                class="secondary-button"
+                [disabled]="saving()"
+                (click)="closeAssignmentForm()">
+                Cancel
+              </button>
+
+            </div>
+
+          </form>
+
+        </div>
+
+      }
+
+      @if (loading()) {
+
+        <div class="empty-panel">
+          <span>🌱</span>
+          <h3>Loading assignments...</h3>
+        </div>
+
+      } @else if (assignments().length === 0) {
+
+        <div class="empty-panel">
+          <span>🪴</span>
+          <h3>No task assignments yet</h3>
+          <p>
+            Assign a care task to a plant
+            to create a care routine.
+          </p>
+        </div>
+
+      } @else {
+
+        <div class="table-wrapper">
+
+          <table>
+            <thead>
+              <tr>
+                <th>Plant</th>
+                <th>Care Task</th>
+                <th>Interval</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+
+            <tbody>
+
+              @for (assignment of assignments();
+                    track assignment.plantId + '-' +
+                          assignment.careTaskId) {
+
+                <tr>
+                  <td>
+                    <strong>
+                      {{ getPlantName(assignment.plantId) }}
+                    </strong>
+                  </td>
+
+                  <td>
+                    {{ getTaskName(assignment.careTaskId) }}
+                  </td>
+
+                  <td>
+                    <span class="interval-pill">
+                      {{ assignment.intervalDays == null
+                        ? 'Interval not set'
+                        : 'Every ' + assignment.intervalDays + ' days' }}
+                    </span>
+                  </td>
+
+                  <td>
+                    <div class="row-actions">
+
+                      <button
+                        type="button"
+                        class="edit-button"
+                        (click)="openEditAssignment(assignment)">
+                        Edit
+                      </button>
+
+                      <button
+                        type="button"
+                        class="delete-button"
+                        [disabled]="deleting()"
+                        (click)="deleteAssignment(assignment)">
+                        Remove
+                      </button>
+
+                    </div>
+                  </td>
+                </tr>
+
+              }
+            </tbody>
+          </table>
+
+        </div>
+
+      }
+
+    </section>
+  }
+
+</div>

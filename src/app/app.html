@@ -1,0 +1,126 @@
+
+<div class="app-shell">
+
+  @if (!isAuthPage()) {
+
+    <header class="main-header">
+
+      <a
+        [routerLink]="auth.isAdmin() ? '/admin' : '/home'"
+        class="brand">
+
+        <span class="brand-icon">🌱</span>
+
+        <span class="brand-copy">
+          <strong>GHARSA</strong>
+          <small>Grow with care</small>
+        </span>
+
+      </a>
+
+      <nav class="main-nav">
+
+        @if (auth.isAdmin()) {
+
+          <a
+            routerLink="/admin"
+            routerLinkActive="active"
+            [routerLinkActiveOptions]="{ exact: true }">
+            Admin Dashboard
+          </a>
+
+          <a
+            routerLink="/admin/care-tasks"
+            routerLinkActive="active">
+            Manage Care Tasks
+          </a>
+
+        } @else {
+
+          <a
+            routerLink="/home"
+            routerLinkActive="active">
+            Home
+          </a>
+
+          <a
+            routerLink="/plants"
+            routerLinkActive="active"
+            [routerLinkActiveOptions]="{ exact: true }">
+            Explore Plants
+          </a>
+
+          <a
+            routerLink="/my-plants"
+            routerLinkActive="active">
+            My Plants
+          </a>
+
+          <a
+            routerLink="/care-schedule"
+            routerLinkActive="active">
+            Care Schedule
+          </a>
+
+        }
+
+        <a
+          routerLink="/profile"
+          routerLinkActive="active">
+          Profile
+        </a>
+
+      </nav>
+
+      <div class="header-user">
+
+        @if (auth.currentUser(); as user) {
+
+          <span class="user-name">
+            {{ user.fullName }}
+          </span>
+
+          <button
+            type="button"
+            class="logout-btn"
+            (click)="logout()">
+            Logout
+          </button>
+
+        } @else {
+
+          <a
+            routerLink="/login"
+            class="header-action">
+            Sign In
+          </a>
+
+        }
+
+      </div>
+
+    </header>
+
+  }
+
+  <main
+    [class.auth-content]="isAuthPage()"
+    [class.main-content]="!isAuthPage()">
+
+    <router-outlet></router-outlet>
+
+  </main>
+
+  @if (!isAuthPage()) {
+
+    <footer class="main-footer">
+      <span>
+        © GHARSA — Plant Care Management
+      </span>
+
+      <span>Grow with love 🌿</span>
+    </footer>
+
+  }
+
+</div>

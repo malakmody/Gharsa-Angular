@@ -1,0 +1,989 @@
+
+<div class="admin-page">
+
+  <!-- Admin Header -->
+  <section class="admin-hero">
+    <div>
+      <span class="eyebrow">
+        GHARSA MANAGEMENT SYSTEM
+      </span>
+
+      <h1>Admin Dashboard 🌿</h1>
+
+      <p>
+        Welcome,
+        {{ auth.currentUser()?.fullName || 'Admin' }}.
+        Manage your plant library and care instructions.
+      </p>
+    </div>
+
+    <div class="hero-symbol">🌿</div>
+  </section>
+
+  <!-- Statistics -->
+  <section class="stats-grid">
+
+    <article class="stat-card">
+      <span class="stat-icon">🌱</span>
+      <div>
+        <p>Total Plants</p>
+        <strong>{{ totalPlants() }}</strong>
+      </div>
+    </article>
+
+    <article class="stat-card">
+      <span class="stat-icon">🗂️</span>
+      <div>
+        <p>Categories</p>
+        <strong>{{ totalCategories() }}</strong>
+      </div>
+    </article>
+
+    <article class="stat-card">
+      <span class="stat-icon">💧</span>
+      <div>
+        <p>Care Guides</p>
+        <strong>{{ totalGuides() }}</strong>
+      </div>
+    </article>
+
+  </section>
+
+  <!-- Admin Navigation -->
+  <nav class="admin-tabs" aria-label="Admin sections">
+
+    <button
+      type="button"
+      [class.active]="activeSection() === 'plants'"
+      (click)="showSection('plants')">
+      🌿 Manage Plants
+    </button>
+
+    <button
+      type="button"
+      [class.active]="activeSection() === 'categories'"
+      (click)="showSection('categories')">
+      🗂️ Manage Categories
+    </button>
+
+    <button
+      type="button"
+      [class.active]="activeSection() === 'guides'"
+      (click)="showSection('guides')">
+      💧 Manage Care Guides
+    </button>
+
+    <!-- New Care Tasks Link -->
+    <a
+      routerLink="/admin/care-tasks"
+      class="care-tasks-link">
+      📋 Manage Care Tasks
+    </a>
+
+  </nav>
+
+  <!-- Messages -->
+  @if (successMessage()) {
+    <div class="message success" role="status">
+      ✓ {{ successMessage() }}
+    </div>
+  }
+
+  @if (errorMessage()) {
+    <div class="message error" role="alert">
+      {{ errorMessage() }}
+    </div>
+  }
+
+  <!-- PLANTS SECTION -->
+  @if (activeSection() === 'plants') {
+
+    <section class="management-section">
+
+      <div class="section-heading">
+        <div>
+          <span class="section-label">
+            PLANT LIBRARY
+          </span>
+
+          <h2>Manage Plants</h2>
+
+          <p>
+            Add, edit, and remove plants from the library.
+          </p>
+        </div>
+
+        <button
+          type="button"
+          class="primary-button"
+          (click)="openAddPlant()">
+          + Add New Plant
+        </button>
+      </div>
+
+      <!-- Plant Form -->
+      @if (plantFormVisible()) {
+
+        <div class="form-panel">
+
+          <div class="form-heading">
+            <h3>
+              {{ editingPlantId() === null
+                ? 'Add New Plant'
+                : 'Edit Plant' }}
+            </h3>
+
+            <button
+              type="button"
+              class="close-button"
+              (click)="cancelPlantForm()">
+              ✕
+            </button>
+          </div>
+
+          <form
+            [formGroup]="plantForm"
+            (ngSubmit)="savePlant()">
+
+            <div class="form-grid">
+
+              <div class="form-field">
+                <label for="plantName">
+                  Plant Name *
+                </label>
+
+                <input
+                  id="plantName"
+                  type="text"
+                  formControlName="name"
+                  placeholder="e.g. Monstera"
+                />
+
+                @if (
+                  plantForm.controls.name.touched &&
+                  plantForm.controls.name.invalid
+                ) {
+                  <small class="field-error">
+                    Enter a plant name.
+                  </small>
+                }
+              </div>
+
+              <div class="form-field">
+                <label for="scientificName">
+                  Scientific Name
+                </label>
+
+                <input
+                  id="scientificName"
+                  type="text"
+                  formControlName="scientificName"
+                  placeholder="e.g. Monstera deliciosa"
+                />
+              </div>
+
+              <div class="form-field">
+                <label for="plantCategory">
+                  Category *
+                </label>
+
+                <select
+                  id="plantCategory"
+                  formControlName="categoryId">
+
+                  <option [ngValue]="0">
+                    Select Category
+                  </option>
+
+                  @for (
+                    category of categories();
+                    track category.categoryId
+                  ) {
+                    <option [ngValue]="category.categoryId">
+                      {{ category.name }}
+                    </option>
+                  }
+                </select>
+
+                @if (
+                  plantForm.controls.categoryId.touched &&
+                  plantForm.controls.categoryId.invalid
+                ) {
+                  <small class="field-error">
+                    Please select a category.
+                  </small>
+                }
+
+                @if (categories().length === 0) {
+                  <small class="field-hint">
+                    First add a category under Manage Categories.
+                  </small>
+                }
+              </div>
+
+              <div class="form-field">
+                <label for="imageUrl">
+                  Image URL
+                </label>
+
+                <input
+                  id="imageUrl"
+                  type="url"
+                  formControlName="imageUrl"
+                  placeholder="https://example.com/plant.jpg"
+                />
+              </div>
+
+              <div class="form-field full-width">
+                <label for="plantDescription">
+                  Description
+                </label>
+
+                <textarea
+                  id="plantDescription"
+                  formControlName="description"
+                  rows="4"
+                  placeholder="Describe the plant...">
+                </textarea>
+              </div>
+
+            </div>
+
+            <div class="form-actions">
+
+              <button
+                type="submit"
+                class="primary-button"
+                [disabled]="saving()">
+
+                {{ saving()
+                  ? 'Saving...'
+                  : editingPlantId() === null
+                    ? 'Add Plant'
+                    : 'Save Changes' }}
+
+              </button>
+
+              <button
+                type="button"
+                class="secondary-button"
+                [disabled]="saving()"
+                (click)="cancelPlantForm()">
+                Cancel
+              </button>
+
+            </div>
+
+          </form>
+        </div>
+
+      }
+
+      <!-- Plant Search -->
+      <div class="toolbar">
+
+        <input
+          type="search"
+          placeholder="Search plants..."
+          aria-label="Search plants"
+          [value]="plantSearch()"
+          (input)="updatePlantSearch($event)"
+        />
+
+        <button
+          type="button"
+          class="secondary-button"
+          [disabled]="loading()"
+          (click)="loadData()">
+          ↻ Refresh
+        </button>
+
+      </div>
+
+      @if (loading()) {
+
+        <div class="empty-panel">
+          <span>🌱</span>
+          <h3>Loading plants...</h3>
+        </div>
+
+      } @else if (filteredPlants().length === 0) {
+
+        <div class="empty-panel">
+          <span>🪴</span>
+          <h3>No plants found</h3>
+
+          <p>
+            Add a plant or try another search.
+          </p>
+        </div>
+
+      } @else {
+
+        <div class="table-wrapper">
+
+          <table class="data-table">
+
+            <thead>
+              <tr>
+                <th>Plant</th>
+                <th>Scientific Name</th>
+                <th>Category</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+
+            <tbody>
+
+              @for (
+                plant of filteredPlants();
+                track plant.plantId
+              ) {
+
+                <tr>
+
+                  <td>
+                    <div class="plant-cell">
+
+                      <div class="plant-thumb">
+                        <span>🌿</span>
+
+                        @if (plant.imageUrl) {
+                          <img
+                            [src]="plant.imageUrl"
+                            [alt]="plant.name"
+                            (error)="imageFailed($event)"
+                          />
+                        }
+                      </div>
+
+                      <div>
+                        <strong>
+                          {{ plant.name }}
+                        </strong>
+
+                        <small>
+                          ID: {{ plant.plantId }}
+                        </small>
+                      </div>
+
+                    </div>
+                  </td>
+
+                  <td>
+                    {{ plant.scientificName || '—' }}
+                  </td>
+
+                  <td>
+                    <span class="category-pill">
+                      {{ getCategoryName(plant) }}
+                    </span>
+                  </td>
+
+                  <td>
+                    <div class="row-actions">
+
+                      <button
+                        type="button"
+                        class="edit-btn"
+                        (click)="editPlant(plant)">
+                        Edit
+                      </button>
+
+                      <button
+                        type="button"
+                        class="delete-btn"
+                        [disabled]="deleting()"
+                        (click)="deletePlant(plant)">
+                        Delete
+                      </button>
+
+                    </div>
+                  </td>
+
+                </tr>
+
+              }
+
+            </tbody>
+
+          </table>
+
+        </div>
+
+      }
+
+    </section>
+
+  }
+
+  <!-- CATEGORIES SECTION -->
+  @if (activeSection() === 'categories') {
+
+    <section class="management-section">
+
+      <div class="section-heading">
+
+        <div>
+          <span class="section-label">
+            ORGANIZE THE LIBRARY
+          </span>
+
+          <h2>Manage Categories</h2>
+
+          <p>
+            Create categories for your plants.
+          </p>
+        </div>
+
+        <button
+          type="button"
+          class="primary-button"
+          (click)="openAddCategory()">
+          + Add Category
+        </button>
+
+      </div>
+
+      <!-- Category Form -->
+      @if (categoryFormVisible()) {
+
+        <div class="form-panel">
+
+          <div class="form-heading">
+
+            <h3>
+              {{ editingCategoryId() === null
+                ? 'Add Category'
+                : 'Edit Category' }}
+            </h3>
+
+            <button
+              type="button"
+              class="close-button"
+              (click)="cancelCategoryForm()">
+              ✕
+            </button>
+
+          </div>
+
+          <form
+            [formGroup]="categoryForm"
+            (ngSubmit)="saveCategory()">
+
+            <div class="form-field">
+
+              <label for="categoryName">
+                Category Name *
+              </label>
+
+              <input
+                id="categoryName"
+                type="text"
+                formControlName="name"
+                placeholder="e.g. Indoor Plants"
+              />
+
+              @if (
+                categoryForm.controls.name.touched &&
+                categoryForm.controls.name.invalid
+              ) {
+                <small class="field-error">
+                  Category name is required.
+                </small>
+              }
+
+            </div>
+
+            <div class="form-field">
+
+              <label for="categoryDescription">
+                Description
+              </label>
+
+              <textarea
+                id="categoryDescription"
+                formControlName="description"
+                rows="4"
+                placeholder="Describe this category...">
+              </textarea>
+
+            </div>
+
+            <div class="form-actions">
+
+              <button
+                type="submit"
+                class="primary-button"
+                [disabled]="saving()">
+
+                {{ saving()
+                  ? 'Saving...'
+                  : editingCategoryId() === null
+                    ? 'Add Category'
+                    : 'Save Changes' }}
+
+              </button>
+
+              <button
+                type="button"
+                class="secondary-button"
+                [disabled]="saving()"
+                (click)="cancelCategoryForm()">
+                Cancel
+              </button>
+
+            </div>
+
+          </form>
+
+        </div>
+
+      }
+
+      <!-- Category Search -->
+      <div class="toolbar">
+
+        <input
+          type="search"
+          placeholder="Search categories..."
+          aria-label="Search categories"
+          [value]="categorySearch()"
+          (input)="updateCategorySearch($event)"
+        />
+
+        <button
+          type="button"
+          class="secondary-button"
+          [disabled]="loading()"
+          (click)="loadData()">
+          ↻ Refresh
+        </button>
+
+      </div>
+
+      @if (loading()) {
+
+        <div class="empty-panel">
+          <span>🌱</span>
+          <h3>Loading categories...</h3>
+        </div>
+
+      } @else if (filteredCategories().length === 0) {
+
+        <div class="empty-panel">
+          <span>🗂️</span>
+          <h3>No categories found</h3>
+        </div>
+
+      } @else {
+
+        <div class="table-wrapper">
+
+          <table class="data-table">
+
+            <thead>
+              <tr>
+                <th>Category</th>
+                <th>Description</th>
+                <th>Plants</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+
+            <tbody>
+
+              @for (
+                category of filteredCategories();
+                track category.categoryId
+              ) {
+
+                <tr>
+
+                  <td>
+                    <strong>
+                      {{ category.name }}
+                    </strong>
+                  </td>
+
+                  <td>
+                    {{ category.description || '—' }}
+                  </td>
+
+                  <td>
+                    <span class="category-pill">
+                      {{ getPlantCount(category.categoryId) }}
+                    </span>
+                  </td>
+
+                  <td>
+                    <div class="row-actions">
+
+                      <button
+                        type="button"
+                        class="edit-btn"
+                        (click)="editCategory(category)">
+                        Edit
+                      </button>
+
+                      <button
+                        type="button"
+                        class="delete-btn"
+                        [disabled]="deleting()"
+                        (click)="deleteCategory(category)">
+                        Delete
+                      </button>
+
+                    </div>
+                  </td>
+
+                </tr>
+
+              }
+
+            </tbody>
+
+          </table>
+
+        </div>
+
+      }
+
+    </section>
+
+  }
+
+  <!-- CARE GUIDES SECTION -->
+  @if (activeSection() === 'guides') {
+
+    <section class="management-section">
+
+      <div class="section-heading">
+
+        <div>
+          <span class="section-label">
+            PLANT CARE INFORMATION
+          </span>
+
+          <h2>Manage Care Guides</h2>
+
+          <p>
+            Set sunlight, watering, soil, and care
+            instructions for each plant.
+          </p>
+        </div>
+
+        <button
+          type="button"
+          class="primary-button"
+          (click)="openAddGuide()">
+          + Add Care Guide
+        </button>
+
+      </div>
+
+      <!-- Guide Form -->
+      @if (guideFormVisible()) {
+
+        <div class="form-panel">
+
+          <div class="form-heading">
+
+            <h3>
+              {{ editingGuideId() === null
+                ? 'Add Care Guide'
+                : 'Edit Care Guide' }}
+            </h3>
+
+            <button
+              type="button"
+              class="close-button"
+              (click)="cancelGuideForm()">
+              ✕
+            </button>
+
+          </div>
+
+          <form
+            [formGroup]="guideForm"
+            (ngSubmit)="saveGuide()">
+
+            <div class="form-grid">
+
+              <div class="form-field full-width">
+
+                <label for="guidePlant">
+                  Select Plant *
+                </label>
+
+                <select
+                  id="guidePlant"
+                  formControlName="plantId">
+
+                  <option [ngValue]="0">
+                    Choose a plant
+                  </option>
+
+                  @if (editingGuideId() !== null) {
+
+                    @for (
+                      plant of plants();
+                      track plant.plantId
+                    ) {
+                      <option [ngValue]="plant.plantId">
+                        {{ plant.name }}
+                      </option>
+                    }
+
+                  } @else {
+
+                    @for (
+                      plant of plantsWithoutGuide();
+                      track plant.plantId
+                    ) {
+                      <option [ngValue]="plant.plantId">
+                        {{ plant.name }}
+                      </option>
+                    }
+
+                  }
+
+                </select>
+
+                @if (
+                  guideForm.controls.plantId.touched &&
+                  guideForm.controls.plantId.invalid
+                ) {
+                  <small class="field-error">
+                    Select a plant.
+                  </small>
+                }
+
+              </div>
+
+              <div class="form-field">
+
+                <label for="sunlight">
+                  Sunlight Requirement *
+                </label>
+
+                <input
+                  id="sunlight"
+                  type="text"
+                  formControlName="sunlightRequirement"
+                  placeholder="e.g. Bright indirect sunlight"
+                />
+
+              </div>
+
+              <div class="form-field">
+
+                <label for="water">
+                  Water Requirement *
+                </label>
+
+                <input
+                  id="water"
+                  type="text"
+                  formControlName="waterRequirement"
+                  placeholder="e.g. Water when topsoil is dry"
+                />
+
+              </div>
+
+              <div class="form-field">
+
+                <label for="soil">
+                  Soil Type *
+                </label>
+
+                <input
+                  id="soil"
+                  type="text"
+                  formControlName="soilType"
+                  placeholder="e.g. Well-draining soil"
+                />
+
+              </div>
+
+              <div class="form-field">
+
+                <label for="interval">
+                  Watering Interval (Days) *
+                </label>
+
+                <input
+                  id="interval"
+                  type="number"
+                  min="1"
+                  step="1"
+                  formControlName="wateringIntervalDays"
+                />
+
+                @if (
+                  guideForm.controls.wateringIntervalDays.touched &&
+                  guideForm.controls.wateringIntervalDays.invalid
+                ) {
+                  <small class="field-error">
+                    Enter an interval of at least 1 day.
+                  </small>
+                }
+
+              </div>
+
+              <div class="form-field full-width">
+
+                <label for="tips">
+                  Additional Tips
+                </label>
+
+                <textarea
+                  id="tips"
+                  rows="4"
+                  formControlName="additionalTips"
+                  placeholder="Extra plant care tips...">
+                </textarea>
+
+              </div>
+
+            </div>
+
+            <div class="form-actions">
+
+              <button
+                type="submit"
+                class="primary-button"
+                [disabled]="saving() || guideForm.invalid">
+
+                {{ saving()
+                  ? 'Saving...'
+                  : editingGuideId() === null
+                    ? 'Add Care Guide'
+                    : 'Save Changes' }}
+
+              </button>
+
+              <button
+                type="button"
+                class="secondary-button"
+                [disabled]="saving()"
+                (click)="cancelGuideForm()">
+                Cancel
+              </button>
+
+            </div>
+
+          </form>
+
+        </div>
+
+      }
+
+      <!-- Guide Table -->
+      @if (loading()) {
+
+        <div class="empty-panel">
+          <span>💧</span>
+          <h3>Loading care guides...</h3>
+        </div>
+
+      } @else if (guides().length === 0) {
+
+        <div class="empty-panel">
+          <span>🌿</span>
+          <h3>No care guides yet</h3>
+
+          <p>
+            Add a guide to help users care
+            for their plants.
+          </p>
+        </div>
+
+      } @else {
+
+        <div class="table-wrapper">
+
+          <table class="data-table">
+
+            <thead>
+              <tr>
+                <th>Plant</th>
+                <th>Sunlight</th>
+                <th>Watering</th>
+                <th>Soil Type</th>
+                <th>Interval</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+
+            <tbody>
+
+              @for (
+                guide of guides();
+                track guide.plantCareGuideId
+              ) {
+
+                <tr>
+
+                  <td>
+                    <strong>
+                      {{ getPlantName(guide.plantId) }}
+                    </strong>
+                  </td>
+
+                  <td>
+                    {{ guide.sunlightRequirement || '—' }}
+                  </td>
+
+                  <td>
+                    {{ guide.waterRequirement || '—' }}
+                  </td>
+
+                  <td>
+                    {{ guide.soilType || '—' }}
+                  </td>
+
+                  <td>
+                    <span class="category-pill">
+                      Every {{ guide.wateringIntervalDays }} days
+                    </span>
+                  </td>
+
+                  <td>
+                    <div class="row-actions">
+
+                      <button
+                        type="button"
+                        class="edit-btn"
+                        (click)="editGuide(guide)">
+                        Edit
+                      </button>
+
+                      <button
+                        type="button"
+                        class="delete-btn"
+                        [disabled]="deleting()"
+                        (click)="deleteGuide(guide)">
+                        Delete
+                      </button>
+
+                    </div>
+                  </td>
+
+                </tr>
+
+              }
+
+            </tbody>
+
+          </table>
+
+        </div>
+
+      }
+
+    </section>
+
+  }
+
+</div>

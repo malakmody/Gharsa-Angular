@@ -1,0 +1,300 @@
+
+<div class="schedule-page">
+
+  <section class="page-hero">
+
+    <div class="hero-content">
+      <span class="eyebrow">
+        STAY ON TRACK
+      </span>
+
+      <h1>
+        Your Care <span>Schedule.</span>
+      </h1>
+
+      <p>
+        A little attention makes a big difference.
+        Keep track of your plants' watering routines
+        and help your garden thrive.
+      </p>
+
+      <div class="hero-actions">
+        <a routerLink="/my-plants" class="hero-button">
+          💧 Record Watering
+        </a>
+
+        <button
+          type="button"
+          class="refresh-button"
+          (click)="loadSchedule()"
+          [disabled]="loading()">
+          Refresh Schedule ↻
+        </button>
+      </div>
+    </div>
+
+    <div class="hero-icon" aria-hidden="true">
+      📅
+    </div>
+
+  </section>
+
+  <section class="overview-section">
+
+    <div class="overview-card">
+      <div class="overview-icon due-icon">💧</div>
+      <div>
+        <span>Needs Watering</span>
+        <strong>
+          {{ loading() ? '...' : dueCount() }}
+        </strong>
+        <small>Due or overdue</small>
+      </div>
+    </div>
+
+    <div class="overview-card">
+      <div class="overview-icon upcoming-icon">🌱</div>
+      <div>
+        <span>Upcoming Watering</span>
+        <strong>
+          {{ loading() ? '...' : upcomingCount() }}
+        </strong>
+        <small>Scheduled for later</small>
+      </div>
+    </div>
+
+    <div class="overview-card">
+      <div class="overview-icon unscheduled-icon">🌿</div>
+      <div>
+        <span>No Schedule</span>
+        <strong>
+          {{ loading() ? '...' : unscheduledCount() }}
+        </strong>
+        <small>Missing watering information</small>
+      </div>
+    </div>
+
+  </section>
+
+  <section class="schedule-section">
+
+    <div class="section-heading">
+      <div>
+        <span class="section-label">
+          YOUR WATERING PLANNER
+        </span>
+
+        <h2>Plant Watering Schedule</h2>
+
+        <p>
+          Review estimated dates and record
+          watering in your plant collection.
+        </p>
+      </div>
+
+      <span class="total-label">
+        {{ loading() ? '...' : totalPlants() }}
+        {{ totalPlants() === 1 ? 'Plant' : 'Plants' }}
+      </span>
+    </div>
+
+    <div class="filter-list">
+
+      <button
+        type="button"
+        [class.active]="selectedFilter() === 'all'"
+        (click)="setFilter('all')">
+        All Plants
+      </button>
+
+      <button
+        type="button"
+        [class.active]="selectedFilter() === 'due'"
+        (click)="setFilter('due')">
+        Needs Watering
+      </button>
+
+      <button
+        type="button"
+        [class.active]="selectedFilter() === 'upcoming'"
+        (click)="setFilter('upcoming')">
+        Upcoming
+      </button>
+
+      <button
+        type="button"
+        [class.active]="selectedFilter() === 'unscheduled'"
+        (click)="setFilter('unscheduled')">
+        No Schedule
+      </button>
+
+    </div>
+
+    @if (loading()) {
+
+      <div class="feedback-panel">
+        <span>🌱</span>
+        <h3>Loading your schedule...</h3>
+        <p>Checking your plants' care routines.</p>
+      </div>
+
+    } @else if (errorMessage()) {
+
+      <div class="feedback-panel">
+        <span>🍃</span>
+        <h3>Unable to load schedule</h3>
+        <p>{{ errorMessage() }}</p>
+
+        <button
+          type="button"
+          class="primary-button"
+          (click)="loadSchedule()">
+          Try Again
+        </button>
+      </div>
+
+    } @else if (totalPlants() === 0) {
+
+      <div class="feedback-panel">
+        <span>🪴</span>
+        <h3>Your care journey starts here!</h3>
+
+        <p>
+          Add your first plant to create
+          a personalized watering schedule.
+        </p>
+
+        <a routerLink="/plants" class="primary-button">
+          Explore Plants
+        </a>
+      </div>
+
+    } @else if (filteredSchedule().length === 0) {
+
+      <div class="feedback-panel">
+        <span>🌿</span>
+        <h3>No plants in this category</h3>
+        <p>Choose another filter to view your plants.</p>
+
+        <button
+          type="button"
+          class="primary-button"
+          (click)="setFilter('all')">
+          Show All Plants
+        </button>
+      </div>
+
+    } @else {
+
+      <div class="schedule-list">
+
+        @for (
+          item of filteredSchedule();
+          track item.myPlantId
+        ) {
+
+          <article class="schedule-card">
+
+            <div class="plant-avatar">
+
+              @if (item.imageUrl) {
+                <img
+                  [src]="item.imageUrl"
+                  [alt]="item.name"
+                  (error)="imageFailed($event)"
+                />
+              }
+
+              <span>🪴</span>
+            </div>
+
+            <div class="plant-information">
+
+              <h3>{{ item.name }}</h3>
+
+              <p>
+                @if (item.lastWateredAt) {
+                  Last watered:
+                  {{ item.lastWateredAt | date:'mediumDate' }}
+                } @else {
+                  No watering recorded yet
+                }
+              </p>
+
+              @if (item.intervalDays) {
+                <small>
+                  Suggested interval:
+                  Every {{ item.intervalDays }} days
+                </small>
+              } @else {
+                <small>
+                  Watering interval not available
+                </small>
+              }
+
+            </div>
+
+            <div class="schedule-date">
+
+              <span>Next Watering</span>
+
+              <strong>
+                @if (item.nextWateringDate) {
+                  {{ item.nextWateringDate | date:'mediumDate' }}
+                } @else {
+                  Not scheduled
+                }
+              </strong>
+
+            </div>
+
+            <div class="schedule-status">
+
+              <span
+                class="status-badge"
+                [class.due]="item.status === 'due'"
+                [class.upcoming]="item.status === 'upcoming'"
+                [class.unscheduled]="item.status === 'unscheduled'">
+
+                {{ getStatusText(item) }}
+
+              </span>
+
+            </div>
+
+            <a
+              routerLink="/my-plants"
+              class="action-button">
+              Record Watering →
+            </a>
+
+          </article>
+
+        }
+
+      </div>
+
+    }
+
+  </section>
+
+  <section class="care-tip">
+
+    <div class="tip-icon">💡</div>
+
+    <div>
+      <span>GENTLE REMINDER</span>
+
+      <h3>Check the soil before watering.</h3>
+
+      <p>
+        Watering dates are estimates based on
+        your plant's care guide. Soil moisture,
+        temperature and light can affect
+        when watering is actually needed.
+      </p>
+    </div>
+
+  </section>
+
+</div>

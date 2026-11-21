@@ -1,0 +1,132 @@
+
+<div class="auth-page">
+
+  <section class="auth-visual">
+    <div class="visual-overlay">
+
+      <a routerLink="/login" class="visual-brand">
+        <span class="brand-symbol">🌱</span>
+        <span>GHARSA</span>
+      </a>
+
+      <div class="visual-copy">
+        <span class="eyebrow">GROW WITH CARE</span>
+
+        <h1>
+          Every plant has<br>
+          a story to grow.
+        </h1>
+
+        <p>
+          Give your plants the attention they
+          deserve, one beautiful day at a time.
+        </p>
+
+        <span class="arabic-line">
+          ازرع اهتمامك، وشاهد نموّك.
+        </span>
+      </div>
+
+      <div class="visual-footer">
+        © GHARSA — Plant Care Management
+      </div>
+
+    </div>
+  </section>
+
+  <section class="auth-form-side">
+
+    <div class="auth-card">
+
+      <div class="mobile-brand">
+        🌱 GHARSA
+      </div>
+
+      <div class="form-heading">
+        <span class="welcome-label">WELCOME BACK</span>
+        <h2>Sign in to GHARSA</h2>
+        <p>
+          Continue your journey toward
+          a greener, happier home.
+        </p>
+      </div>
+
+      @if (errorMessage()) {
+        <div class="error-message" role="alert">
+          {{ errorMessage() }}
+        </div>
+      }
+
+      <form [formGroup]="form"
+            (ngSubmit)="login()">
+
+        <div class="form-field">
+          <label for="email">Email Address</label>
+
+          <input
+            id="email"
+            type="email"
+            formControlName="email"
+            placeholder="you@example.com"
+            autocomplete="email"
+          />
+
+          @if (email.touched && email.invalid) {
+            <small class="field-error">
+              Enter a valid email address.
+            </small>
+          }
+        </div>
+
+        <div class="form-field">
+          <label for="password">Password</label>
+
+          <div class="password-wrapper">
+
+            <input
+              id="password"
+              [type]="showPassword() ? 'text' : 'password'"
+              formControlName="password"
+              placeholder="Enter your password"
+              autocomplete="current-password"
+            />
+
+            <button
+              type="button"
+              class="password-toggle"
+              (click)="togglePassword()">
+              {{ showPassword() ? 'Hide' : 'Show' }}
+            </button>
+
+          </div>
+
+          @if (password.touched && password.invalid) {
+            <small class="field-error">
+              Password is required.
+            </small>
+          }
+        </div>
+
+        <button
+          type="submit"
+          class="submit-btn"
+          [disabled]="loading()">
+
+          {{ loading() ? 'Signing in...' : 'Sign In' }}
+
+        </button>
+
+      </form>
+
+      <div class="auth-switch">
+        New to GHARSA?
+        <a routerLink="/register">
+          Create an account
+        </a>
+      </div>
+
+    </div>
+
+  </section>
+
+</div>

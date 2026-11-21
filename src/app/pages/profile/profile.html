@@ -1,0 +1,325 @@
+
+<div class="profile-page">
+
+  <!-- Page Header -->
+  <section class="page-hero">
+
+    <div class="hero-content">
+
+      <span class="eyebrow">
+        YOUR GHARSA ACCOUNT
+      </span>
+
+      <h1>
+        My <span>Profile.</span>
+      </h1>
+
+      <p>
+        Your personal space to manage
+        your account and continue
+        your green journey.
+      </p>
+
+    </div>
+
+    <div class="hero-decoration"
+         aria-hidden="true">
+      🌿
+    </div>
+
+  </section>
+
+  @if (loading()) {
+
+    <div class="feedback-panel">
+      <span>🌱</span>
+      <h2>Loading your profile...</h2>
+      <p>Getting your account information.</p>
+    </div>
+
+  } @else if (!user()) {
+
+    <div class="feedback-panel">
+      <span>🍃</span>
+      <h2>Unable to load profile</h2>
+      <p>{{ errorMessage() }}</p>
+
+      <button
+        type="button"
+        class="primary-button"
+        (click)="loadProfile()">
+        Try Again
+      </button>
+    </div>
+
+  } @else {
+
+    <div class="profile-grid">
+
+      <!-- User Summary -->
+      <aside class="account-card">
+
+        <div class="avatar">
+          {{ getInitials() }}
+        </div>
+
+        <h2>{{ user()?.fullName }}</h2>
+
+        <p>{{ user()?.email }}</p>
+
+        <span class="member-label">
+          🌱 GHARSA MEMBER
+        </span>
+
+        <div class="account-divider"></div>
+
+        <div class="member-detail">
+
+          <span>Member Since</span>
+
+          <strong>
+            {{ user()?.createdAt | date:'mediumDate' }}
+          </strong>
+
+        </div>
+
+        <div class="account-divider"></div>
+
+        <a routerLink="/my-plants"
+           class="collection-link">
+          🪴 My Plant Collection
+        </a>
+
+        <a routerLink="/care-schedule"
+           class="collection-link">
+          📅 Care Schedule
+        </a>
+
+        <button
+          type="button"
+          class="logout-button"
+          (click)="logout()">
+          Logout
+        </button>
+
+      </aside>
+
+      <!-- Profile Information -->
+      <section class="details-card">
+
+        <div class="details-heading">
+
+          <div>
+
+            <span class="section-label">
+              ACCOUNT INFORMATION
+            </span>
+
+            <h2>Personal Details</h2>
+
+            <p>
+              Keep your account information
+              up to date.
+            </p>
+
+          </div>
+
+          @if (!editing()) {
+
+            <button
+              type="button"
+              class="edit-button"
+              (click)="startEditing()">
+              ✎ Edit Profile
+            </button>
+
+          }
+
+        </div>
+
+        @if (successMessage()) {
+
+          <div class="message success" role="status">
+            ✓ {{ successMessage() }}
+          </div>
+
+        }
+
+        @if (errorMessage()) {
+
+          <div class="message error" role="alert">
+            {{ errorMessage() }}
+          </div>
+
+        }
+
+        @if (!editing()) {
+
+          <!-- Read-only View -->
+          <div class="info-grid">
+
+            <div class="info-item">
+              <span>Full Name</span>
+
+              <strong>
+                {{ user()?.fullName }}
+              </strong>
+            </div>
+
+            <div class="info-item">
+              <span>Email Address</span>
+
+              <strong>
+                {{ user()?.email }}
+              </strong>
+            </div>
+
+            <div class="info-item">
+              <span>Account ID</span>
+
+              <strong>
+                #{{ user()?.userId }}
+              </strong>
+            </div>
+
+            <div class="info-item">
+              <span>Account Created</span>
+
+              <strong>
+                {{ user()?.createdAt | date:'mediumDate' }}
+              </strong>
+            </div>
+
+          </div>
+
+        } @else {
+
+          <!-- Edit Form -->
+          <form
+            [formGroup]="form"
+            (ngSubmit)="saveProfile()">
+
+            <div class="form-field">
+
+              <label for="fullName">
+                Full Name
+              </label>
+
+              <input
+                id="fullName"
+                type="text"
+                formControlName="fullName"
+                autocomplete="name"
+                placeholder="Enter your full name"
+              />
+
+              @if (fullName.touched && fullName.invalid) {
+
+                <small class="field-error">
+                  Please enter your full name.
+                </small>
+
+              }
+
+            </div>
+
+            <!-- Email is read-only -->
+            <div class="form-field">
+
+              <label for="email">
+                Email Address
+              </label>
+
+              <input
+                id="email"
+                type="email"
+                [value]="user()?.email ?? ''"
+                readonly
+                aria-describedby="email-note"
+              />
+
+              <small
+                id="email-note"
+                class="field-error"
+                style="color: #71815a">
+                Email address cannot be changed.
+              </small>
+
+            </div>
+
+            <div class="form-actions">
+
+              <button
+                type="submit"
+                class="primary-button"
+                [disabled]="saving()">
+
+                {{ saving() ? 'Saving...' : 'Save Changes' }}
+
+              </button>
+
+              <button
+                type="button"
+                class="cancel-button"
+                [disabled]="saving()"
+                (click)="cancelEditing()">
+
+                Cancel
+
+              </button>
+
+            </div>
+
+          </form>
+
+        }
+
+        <div class="security-note">
+
+          <span>🔒</span>
+
+          <div>
+
+            <h3>Your Account</h3>
+
+            <p>
+              Your profile information is linked
+              to your personal GHARSA account.
+              Keep your login details private.
+            </p>
+
+          </div>
+
+        </div>
+
+      </section>
+
+    </div>
+
+    <!-- Bottom Message -->
+    <section class="bottom-banner">
+
+      <div>
+
+        <span>KEEP GROWING</span>
+
+        <h2>
+          Your green journey is just beginning.
+        </h2>
+
+        <p>
+          Every plant you nurture makes
+          your world a little greener.
+        </p>
+
+      </div>
+
+      <a routerLink="/plants">
+        Explore Plants →
+      </a>
+
+    </section>
+
+  }
+
+</div>
